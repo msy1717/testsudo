@@ -59,9 +59,9 @@ async def start_(event):
         ],
     )
 
-@javes.on(admin_cmd("webss (.*)"))
-async def webss(message):
-    king= message.text
+@bot.on(events.NewMessage(incoming=True, func=lambda e: e.is_private))
+async def webss(event):
+    king= event.text
     amaan=king[7:]
     link_match = match(r"\bhttps?://.*\.\S+", amaan)
     if not link_match:

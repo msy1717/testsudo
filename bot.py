@@ -68,7 +68,7 @@ async def webss(event):
         await event.edit("I need a valid link to take screenshots from.")
         return
     link = link_match.group()
-    await .event.edit("Processing ...")
+    await event.edit("Processing ...")
     chrome_options = webdriver.ChromeOptions()
     chrome_options.binary_location = Config.GOOGLE_CHROME_BIN
     chrome_options.add_argument("--ignore-certificate-errors")

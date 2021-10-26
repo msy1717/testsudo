@@ -65,10 +65,10 @@ async def webss(event):
     amaan=king[7:]
     link_match = match(r"\bhttps?://.*\.\S+", amaan)
     if not link_match:
-        await event.edit("I need a valid link to take screenshots from.")
+        await bot.edit("I need a valid link to take screenshots from.")
         return
     link = link_match.group()
-    await event.edit("Processing ...")
+    await bot.edit("Processing ...")
     chrome_options = webdriver.ChromeOptions()
     chrome_options.binary_location = Config.GOOGLE_CHROME_BIN
     chrome_options.add_argument("--ignore-certificate-errors")
@@ -93,7 +93,7 @@ async def webss(event):
     )
     driver.set_window_size(width + 125, height + 125)
     wait_for = height / 1000
-    await message.edit(
+    await bot.edit(
         f"Generating screenshot of the page..."
         f"\nHeight of page = {height}px"
         f"\nWidth of page = {width}px"

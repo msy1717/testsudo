@@ -7,7 +7,7 @@ import requests
 from telethon import Button, TelegramClient, events
 from htmlwebshot import WebShot
 from telethon.errors.rpcerrorlist import PhotoInvalidDimensionsError
-shot = WebShot
+shot = WebShot()
 
 BOT_TOKEN = '2001104701:AAGUr8Vjt1s2UPuFSYMosFZIo0EeDCHLqwE'
 

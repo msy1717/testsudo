@@ -16,7 +16,7 @@ logging.basicConfig(
 )
 
 bot = TelegramClient(None, api_id=6, api_hash="eb06d4abfb49dc3eeb1aeb98ae0f581e").start(
-    bot_token=("BOT_TOKEN")
+    bot_token=("2001104701:AAGUr8Vjt1s2UPuFSYMosFZIo0EeDCHLqwE")
 )
 
 logging.info("Starting bot...")

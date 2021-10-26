@@ -65,10 +65,10 @@ async def webss(event):
     amaan=king[7:]
     link_match = match(r"\bhttps?://.*\.\S+", amaan)
     if not link_match:
-        await message.edit("I need a valid link to take screenshots from.")
+        await event.edit("I need a valid link to take screenshots from.")
         return
     link = link_match.group()
-    await message.edit("Processing ...")
+    await .event.edit("Processing ...")
     chrome_options = webdriver.ChromeOptions()
     chrome_options.binary_location = Config.GOOGLE_CHROME_BIN
     chrome_options.add_argument("--ignore-certificate-errors")

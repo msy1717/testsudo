@@ -2,12 +2,32 @@
 
 import logging
 from os import remove
+import asyncio
 
+import os
+
+from re import match
+
+import aiofiles
+
+from selenium import webdriver
+
+
+
+
+
+
+
+
+
+from selenium import webdriver
+
+from webdriver_manager.chrome import ChromeDriverManager
 import requests
 from telethon import Button, TelegramClient, events
 from htmlwebshot import WebShot
 from telethon.errors.rpcerrorlist import PhotoInvalidDimensionsError
-shot = WebShot()
+
 
 BOT_TOKEN = '2001104701:AAGUr8Vjt1s2UPuFSYMosFZIo0EeDCHLqwE'
 
@@ -39,64 +59,68 @@ async def start_(event):
         ],
     )
 
-@bot.on(events.NewMessage(incoming=True, func=lambda e: e.is_private))
-async def web_ss_capture(event):
-    if event.text and not event.text.startswith("/") and not event.document:
-        url = event.text
-        xurl = ""
-        xx = await event.reply("Getting info...")
-        try:
-            requests.get(url)
-            xurl = url
-        except requests.ConnectionError:
-            return await xx.edit("Invalid URL!")
-        except requests.exceptions.MissingSchema:
-            try:
-                requests.get("https://" + url)
-                xurl = "https://" + url
-            except requests.ConnectionError:
-                try:
-                    requests.get("http://" + url)
-                    xurl = "http://" + url
-                except requests.ConnectionError:
-                    return await xx.edit("Invalid URL!")
-        await xx.edit("Generating a webshot...")
-        try:
-            web_ss_path = shot.create_pic(url=xurl)
-            await xx.edit("Uploading a webshot of `{}`".format(xurl))
-            await bot.send_file(
-                event.chat_id,
-                file=web_ss_path,
-                caption="**WebShot generated.**\n\n~ @Botz_Official",
-            )
-            await xx.delete()
-            remove(web_ss_path)
-        except Exception as e:
-            await xx.edit(
-                f"**ERROR**: \n`{e}`\n**URL**: `{xurl}`\n\nKindly forward this message to @Godmrunal."
-            )
-    elif event.document and event.file.name.endswith(".html"):
-        xx = await event.reply("Downloading file.... Please wait..")
-        path = await bot.download_file(event.document)
-        await xx.edit("Generating a screenshot...")
-        shot.create_pic(html=path, output="webss_bh.jpg")
-        try:
-            await event.reply(
-                "**ScreenShot generated.**\n\n~ @Botz_Official", file="webss_bh.jpg"
-            )
-            await xx.delete()
-        except PhotoInvalidDimensionsError:
-            await event.reply(
-                "**ScreenShot generated.**\n\n~ @Botz_Official", file="webss_bh.jpg",
-                force_document=True
-            )
-            await xx.delete()
-
-        try:
-            remove("webss_bh.jpg")
-        except Exception as e:
-            logging.warning(e)
-
+@javes.on(admin_cmd("webss (.*)"))
+async def webss(message):
+    king= message.text
+    amaan=king[7:]
+    link_match = match(r"\bhttps?://.*\.\S+", amaan)
+    if not link_match:
+        await message.edit("I need a valid link to take screenshots from.")
+        return
+    link = link_match.group()
+    await message.edit("Processing ...")
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.binary_location = Config.GOOGLE_CHROME_BIN
+    chrome_options.add_argument("--ignore-certificate-errors")
+    chrome_options.add_argument("--test-type")
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-gpu")
+    #driver = webdriver.Chrome(chrome_options=chrome_options)
+    driver = webdriver.Chrome((ChromeDriverManager().install()),chrome_options=chrome_options)
+    driver.get(link)
+    height = driver.execute_script(
+        "return Math.max(document.body.scrollHeight, document.body.offsetHeight, "
+        "document.documentElement.clientHeight, document.documentElement.scrollHeight, "
+        "document.documentElement.offsetHeight);"
+    )
+    width = driver.execute_script(
+        "return Math.max(document.body.scrollWidth, document.body.offsetWidth, "
+        "document.documentElement.clientWidth, document.documentElement.scrollWidth, "
+        "document.documentElement.offsetWidth);"
+    )
+    driver.set_window_size(width + 125, height + 125)
+    wait_for = height / 1000
+    await message.edit(
+        f"Generating screenshot of the page..."
+        f"\nHeight of page = {height}px"
+        f"\nWidth of page = {width}px"
+        f"\nWaiting ({int(wait_for)}s) for the page to load."
+    )
+    await asyncio.sleep(int(wait_for))
+    im_png = driver.get_screenshot_as_png()
+    driver.close()
+    message_id = message.message.id
+    reply = await message.get_reply_message()
+    if message.reply_to_msg_id:
+        message_id = message.reply_to_msg_id
+    file_path = os.path.join(Config.TEMP_DOWNLOAD_DIRECTORY , "webss.png")
+    async with aiofiles.open(file_path, "wb") as out_file:
+        await out_file.write(im_png)
+    await asyncio.gather(
+        message.delete(),
+        message.client.send_file(
+            message.chat_id,
+            file_path,
+            caption=link,
+            force_document=False,
+            reply_to=message_id,
+        ),
+    )
+    os.remove(file_path)
+    driver.quit()
 
 logging.info("\n\nBot has started.\n(c) @Godmrunal")
 
